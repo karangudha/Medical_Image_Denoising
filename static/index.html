@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Denoising Tool</title>
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #FFF4E4;
+            /* Ivory pearl */
+            color: #2B1A12;
+            /* Almost black */
+        }
+
+        h1 {
+            margin: 70px auto 20px;
+            font-size: 3rem;
+            color: #DC6D18;
+            /* Tangy orange */
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .main-box {
+            margin: 10px auto;
+            padding: 30px;
+            border: 2px solid #B1AA81;
+            border-radius: 8px;
+            max-width: 400px;
+            background: #F8E0C9;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .main-box input[type="file"] {
+            width: calc(100% - 40px);
+            margin: 20px auto;
+            padding: 10px;
+            border: 2px dashed #B1AA81;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .main-box button {
+            display: block;
+            width: calc(100% - 40px);
+            margin: 20px auto;
+            padding: 10px;
+            font-size: 1rem;
+            color: #fff;
+            background: #DC6D18;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .main-box button:hover {
+            background: #b55b16;
+        }
+
+        .result-container {
+            display: none;
+            margin: 20px auto;
+            padding: 20px;
+            border: 2px solid #B1AA81;
+            border-radius: 8px;
+            max-width: 400px;
+            background: #F8E0C9;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-container img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+        }
+
+        .error {
+            color: red;
+            margin-top: 20px;
+        }
+
+        .footer-box {
+            padding: 20px;
+            border-top: 1px solid #B1AA81;
+            background: #2B1A12;
+            color: #FFF4E4;
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+
+        .footer-box span {
+            color: #DC6D18;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Denoising Tool</h1>
+
+    <main>
+        <div class="main-box" id="mainBox">
+            <form id="imageForm" enctype="multipart/form-data">
+                <input type="file" id="imageFile" name="image" accept="image/*" required>
+                <button type="submit">Denoise</button>
+            </form>
+        </div>
+
+        <div id="result" class="result-container">
+            <h2>Denoised Image</h2>
+            <img id="denoisedImage" src="" alt="Denoised Image">
+        </div>
+
+        <div id="error" class="error"></div>
+    </main>
+
+    <div class="footer-box">
+        Final year major project under the guidance of Dr. Dijendra Nath Roy<br>
+        Made with <span>&hearts;</span> by Karan and Ashish
+    </div>
+
+    <script>
+        document.getElementById('imageForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            // Hide main box and clear previous error messages
+            document.getElementById('mainBox').style.display = 'none';
+            document.getElementById('error').textContent = '';
+
+            const formData = new FormData();
+            const imageFile = document.getElementById('imageFile').files[0];
+            formData.append('image', imageFile);
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('denoisedImage').src = data.denoised_image_path;
+                    document.getElementById('result').style.display = 'block';
+                } else {
+                    throw new Error(data.error || 'An error occurred');
+                }
+            } catch (error) {
+                document.getElementById('mainBox').style.display = 'block';
+                document.getElementById('error').textContent = error.message;
+            }
+        });
+    </script>
+
+</body>
+
+</html>
